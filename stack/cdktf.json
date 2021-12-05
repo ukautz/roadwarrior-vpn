@@ -1,0 +1,24 @@
+{
+  "language": "typescript",
+  "app": "npx ts-node main.ts",
+  "projectId": "74ca6711-f045-4875-b7ed-edf848e011f7",
+  "terraformProviders": [
+    {
+      "name": "digitalocean",
+      "version": "~>2.16",
+      "source": "digitalocean/digitalocean"
+    },
+    {
+      "name": "hcloud",
+      "version": ">=1.32,<2",
+      "source": "hetznercloud/hcloud"
+    },
+    "cloudinit@>=2.2,<3",
+    "local"
+  ],
+  "terraformModules": [],
+  "context": {
+    "excludeStackIdFromLogicalIds": "true",
+    "allowSepCharsInLogicalIds": "true"
+  }
+}
