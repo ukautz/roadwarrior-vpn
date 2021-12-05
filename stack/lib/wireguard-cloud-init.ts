@@ -1,24 +1,24 @@
 import { Construct } from "constructs";
 import * as cloudinit from "../.gen/providers/cloudinit";
 
-export interface WireguardCloudInitOptions {
-  vpnServerAddress: string;
-  vpnServerPort: string;
+const defaultServerAddress = "192.168.6.1/24";
+const defaultServerPort = "51397";
+const defaultClientAddress = "192.168.6.10/24";
+
+export interface WireguardCloudInitProps {
+  vpnServerAddress?: string;
+  vpnServerPort?: string;
   vpnServerPrivateKey: string;
   vpnClientPublicKey: string;
-  vpnClientAddress: string;
+  vpnClientAddress?: string;
   base64Encode?: boolean;
 }
 
 export class WireguardCloudInit extends cloudinit.Config {
-  constructor(
-    scope: Construct,
-    name: string,
-    options: WireguardCloudInitOptions
-  ) {
+  constructor(scope: Construct, name: string, props: WireguardCloudInitProps) {
     super(scope, name, {
-      base64Encode: options.base64Encode ?? true,
-      gzip: options.base64Encode ?? true,
+      base64Encode: props.base64Encode ?? true,
+      gzip: props.base64Encode ?? true,
       part: [
         {
           contentType: "text/cloud-config",
@@ -38,15 +38,15 @@ umask 077
 
 cat > wg0.conf <<- EOF
 [Interface]
-Address = ${options.vpnServerAddress}
-ListenPort = ${options.vpnServerPort}
-PrivateKey = ${options.vpnServerPrivateKey}
+Address = ${props.vpnServerAddress ?? defaultServerAddress}
+ListenPort = ${props.vpnServerPort ?? defaultServerPort}
+PrivateKey = ${props.vpnServerPrivateKey}
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
 
 [Peer]
-PublicKey = ${options.vpnClientPublicKey}
-AllowedIPs = ${options.vpnClientAddress}
+PublicKey = ${props.vpnClientPublicKey}
+AllowedIPs = ${props.vpnClientAddress ?? defaultClientAddress}
 EOF
 
 umask 022

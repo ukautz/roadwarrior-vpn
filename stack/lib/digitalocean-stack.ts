@@ -1,48 +1,51 @@
-import { TerraformOutput } from "cdktf";
-import { App } from "./core/app";
-import { Stack } from "./core/stack";
+import { TerraformOutput, TerraformStack } from "cdktf";
 import * as cloudinit from "../.gen/providers/cloudinit";
 import * as digitalocean from "../.gen/providers/digitalocean";
 import * as fs from "fs";
 import {
   WireguardCloudInit,
-  WireguardCloudInitOptions,
+  WireguardCloudInitProps,
 } from "./wireguard-cloud-init";
+import { Construct } from "constructs";
 
-export interface DigitalOceanStackOptions extends WireguardCloudInitOptions {
+const defaultServerImage = "ubuntu-20-04-x64";
+const defaultServerSize = "s-1vcpu-1gb";
+const defaultServerRegion = "fra1";
+
+export interface DigitalOceanStackProps extends WireguardCloudInitProps {
   digitalOceanToken: string;
-  serverImage: string;
-  serverSize: string;
-  serverRegion: string;
   sshKeyPath: string;
+  serverImage?: string;
+  serverSize?: string;
+  serverRegion?: string;
 }
 
-export class DigitalOceanStack extends Stack {
-  constructor(scope: App, name: string, options: DigitalOceanStackOptions) {
+export class DigitalOceanStack extends TerraformStack {
+  constructor(scope: Construct, name: string, props: DigitalOceanStackProps) {
     super(scope, name);
 
     new digitalocean.DigitaloceanProvider(this, "CloudProvider", {
-      token: options.digitalOceanToken,
+      token: props.digitalOceanToken,
     });
 
     new cloudinit.CloudinitProvider(this, "CloudInitProvider");
 
-    const publicKey = fs.readFileSync(options.sshKeyPath, "utf8");
+    const publicKey = fs.readFileSync(props.sshKeyPath, "utf8");
     const sshKey = new digitalocean.SshKey(this, "SshKey", {
       name: `${name} Key`,
       publicKey,
     });
 
     const userData = new WireguardCloudInit(this, "WireguardCloudInit", {
-      ...options,
+      ...props,
       base64Encode: false,
     });
 
     const server = new digitalocean.Droplet(this, "VpnServer", {
       name: "vpn-server",
-      image: options.serverImage,
-      size: options.serverSize,
-      region: options.serverRegion,
+      image: props.serverImage ?? defaultServerImage,
+      size: props.serverSize ?? defaultServerSize,
+      region: props.serverRegion ?? defaultServerRegion,
       sshKeys: [sshKey.id],
       userData: userData.rendered,
     });
@@ -51,12 +54,12 @@ export class DigitalOceanStack extends Stack {
       ["server-id", server.id],
       ["server-ip", server.ipv4Address],
       ["server-status", server.status],
-      ["server-vpn-port", options.vpnServerPort],
-      ["server-vpn-network", options.vpnServerAddress],
-      ["client-vpn-address", options.vpnClientAddress],
+      ["server-vpn-port", props.vpnServerPort],
+      ["server-vpn-network", props.vpnServerAddress],
+      ["client-vpn-address", props.vpnClientAddress],
     ].map(
       ([k, v]) =>
-        new TerraformOutput(this, k, {
+        new TerraformOutput(this, k as string, {
           value: v,
         })
     );

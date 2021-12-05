@@ -1,48 +1,51 @@
-import { TerraformOutput } from "cdktf";
-import { App } from "./core/app";
-import { Stack } from "./core/stack";
+import { TerraformOutput, TerraformStack } from "cdktf";
 import * as cloudinit from "../.gen/providers/cloudinit";
 import * as hcloud from "../.gen/providers/hcloud";
 import * as fs from "fs";
 import {
   WireguardCloudInit,
-  WireguardCloudInitOptions,
+  WireguardCloudInitProps,
 } from "./wireguard-cloud-init";
+import { Construct } from "constructs";
 
-export interface HetznerStackOptions extends WireguardCloudInitOptions {
+const defaultServerImage = "ubuntu-20.04";
+const defaultServerType = "cx11";
+const defaultServerLocation = "nbg1";
+
+export interface HetznerStackProps extends WireguardCloudInitProps {
   hcloudToken: string;
-  serverImage: string;
-  serverType: string;
-  serverLocation: string;
   sshKeyPath: string;
+  serverImage?: string;
+  serverType?: string;
+  serverLocation?: string;
 }
 
-export class HetznerStack extends Stack {
-  constructor(scope: App, name: string, options: HetznerStackOptions) {
+export class HetznerStack extends TerraformStack {
+  constructor(scope: Construct, name: string, props: HetznerStackProps) {
     super(scope, name);
 
     new hcloud.HcloudProvider(this, "CloudProvider", {
-      token: options.hcloudToken,
+      token: props.hcloudToken,
     });
 
     new cloudinit.CloudinitProvider(this, "CloudInitProvider");
 
-    const publicKey = fs.readFileSync(options.sshKeyPath, "utf8");
+    const publicKey = fs.readFileSync(props.sshKeyPath, "utf8");
     const sshKey = new hcloud.SshKeyA(this, "SshKey", {
       name: `${name} Key`,
       publicKey,
     });
 
     const userData = new WireguardCloudInit(this, "WireguardCloudInit", {
-      ...options,
+      ...props,
       base64Encode: true,
     });
 
     const server = new hcloud.Server(this, "VpnServer", {
       name: "vpn-server",
-      image: options.serverImage,
-      serverType: options.serverType,
-      location: options.serverLocation,
+      image: props.serverImage ?? defaultServerImage,
+      serverType: props.serverType ?? defaultServerType,
+      location: props.serverLocation ?? defaultServerLocation,
       sshKeys: [sshKey.id],
       userData: userData.rendered,
     });
@@ -51,12 +54,12 @@ export class HetznerStack extends Stack {
       ["server-id", server.id],
       ["server-ip", server.ipv4Address],
       ["server-status", server.status],
-      ["server-vpn-port", options.vpnServerPort],
-      ["server-vpn-network", options.vpnServerAddress],
-      ["client-vpn-address", options.vpnClientAddress],
+      ["server-vpn-port", props.vpnServerPort],
+      ["server-vpn-network", props.vpnServerAddress],
+      ["client-vpn-address", props.vpnClientAddress],
     ].map(
       ([k, v]) =>
-        new TerraformOutput(this, k, {
+        new TerraformOutput(this, k as string, {
           value: v,
         })
     );

@@ -80,12 +80,21 @@ export class App extends cdktf.App {
    *
    * @param key in the context
    * @param fallback optional value to use, if context not existing
+   * @returns value from context or fallback
+   */
+  public context = (key: string, fallback?: string): string | undefined =>
+    this.node.tryGetContext(key) ?? fallback;
+
+  /**
+   * Convenient accessor to parameters in context
+   *
+   * @param key in the context
+   * @param fallback optional value to use, if context not existing
    * @returns value from context or fallback or throws exception
    */
-  public context = (key: string, fallback?: string): string => {
-    const val = this.node.tryGetContext(key);
+  public mustContext = (key: string, fallback?: string): string => {
+    const val = this.context(key, fallback);
     if (val !== undefined) return val as string;
-    if (fallback !== undefined) return fallback;
     throw new Error(`Missing required context key: ${key}`);
   };
 }

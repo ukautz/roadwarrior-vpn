@@ -1,0 +1,78 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Hetzner Stack Renders as expected 1`] = `
+"{
+  \\"output\\": {
+    \\"client-vpn-address\\": {},
+    \\"server-id\\": {
+      \\"value\\": \\"\${hcloud_server.VpnServer.id}\\"
+    },
+    \\"server-ip\\": {
+      \\"value\\": \\"\${hcloud_server.VpnServer.ipv4_address}\\"
+    },
+    \\"server-status\\": {
+      \\"value\\": \\"\${hcloud_server.VpnServer.status}\\"
+    },
+    \\"server-vpn-network\\": {},
+    \\"server-vpn-port\\": {}
+  },
+  \\"provider\\": {
+    \\"cloudinit\\": [
+      {}
+    ],
+    \\"hcloud\\": [
+      {
+        \\"token\\": \\"the-token\\"
+      }
+    ]
+  },
+  \\"resource\\": {
+    \\"cloudinit_config\\": {
+      \\"WireguardCloudInit\\": {
+        \\"base64_encode\\": true,
+        \\"gzip\\": true,
+        \\"part\\": [
+          {
+            \\"content\\": \\"#cloud-config\\\\napt_upgrade: true\\\\npackages:\\\\n  - wireguard\\",
+            \\"content_type\\": \\"text/cloud-config\\"
+          },
+          {
+            \\"content\\": \\"#!/bin/bash\\\\n\\\\nmkdir -p /etc/wireguard\\\\ncd /etc/wireguard\\\\n\\\\numask 077\\\\n\\\\ncat > wg0.conf <<- EOF\\\\n[Interface]\\\\nAddress = 192.168.6.1/24\\\\nListenPort = 51397\\\\nPrivateKey = priv-key\\\\nPostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\\\\nPostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE\\\\n\\\\n[Peer]\\\\nPublicKey = pub-key\\\\nAllowedIPs = 192.168.6.10/24\\\\nEOF\\\\n\\\\numask 022\\\\nsysctl -w net.ipv4.ip_forward=1\\\\necho \\\\\\"net.ipv4.ip_forward = 1\\\\\\" >> /etc/sysctl.d/forwarding.conf\\\\n\\\\nsystemctl enable wg-quick@wg0\\\\nsystemctl start wg-quick@wg0\\",
+            \\"content_type\\": \\"text/x-shellscript\\"
+          }
+        ]
+      }
+    },
+    \\"hcloud_server\\": {
+      \\"VpnServer\\": {
+        \\"image\\": \\"ubuntu-20.04\\",
+        \\"location\\": \\"nbg1\\",
+        \\"name\\": \\"vpn-server\\",
+        \\"server_type\\": \\"cx11\\",
+        \\"ssh_keys\\": [
+          \\"\${hcloud_ssh_key.SshKey.id}\\"
+        ],
+        \\"user_data\\": \\"\${cloudinit_config.WireguardCloudInit.rendered}\\"
+      }
+    },
+    \\"hcloud_ssh_key\\": {
+      \\"SshKey\\": {
+        \\"name\\": \\"Stack Key\\",
+        \\"public_key\\": \\"public key content\\"
+      }
+    }
+  },
+  \\"terraform\\": {
+    \\"required_providers\\": {
+      \\"cloudinit\\": {
+        \\"source\\": \\"cloudinit\\",
+        \\"version\\": \\">=2.2,<3\\"
+      },
+      \\"hcloud\\": {
+        \\"source\\": \\"hetznercloud/hcloud\\",
+        \\"version\\": \\">=1.32,<2\\"
+      }
+    }
+  }
+}"
+`;
