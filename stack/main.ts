@@ -21,6 +21,9 @@ switch (provider) {
   case "hetzner":
     new HetznerStack(app, "VpnStack", {
       hcloudToken: app.mustContext("hcloudToken"),
+      serverImage: app.context("serverImage"),
+      serverType: app.context("serverType"),
+      serverLocation: app.context("serverLocation"),
       sshKeyPath,
       vpnClientAddress,
       vpnClientPublicKey,
@@ -32,9 +35,9 @@ switch (provider) {
   case "digitalocean":
     new DigitalOceanStack(app, "VpnStack", {
       digitalOceanToken: app.mustContext("digitalOceanToken"),
-      serverImage: app.context("serverImage", "ubuntu-20-04-x64"),
-      serverSize: app.context("serverSize", "s-1vcpu-1gb"),
-      serverRegion: app.context("serverRegion", "fra1"),
+      serverImage: app.context("serverImage"),
+      serverSize: app.context("serverSize"),
+      serverRegion: app.context("serverRegion"),
       sshKeyPath,
       vpnClientAddress,
       vpnClientPublicKey,
