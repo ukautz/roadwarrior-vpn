@@ -1,16 +1,16 @@
 .DEFAULT_GOAL: up
 
 keys/server.priv:
-	wg genkey > $@
+	@umask 077 && wg genkey > $@
 
 keys/server.pub: keys/server.priv
-	cat $< | wg pubkey > $@
+	@umask 077 && cat $< | wg pubkey > $@
 
 keys/client.priv:
-	wg genkey > $@
+	@umask 077 && wg genkey > $@
 
 keys/client.pub: keys/client.priv
-	cat $< | wg pubkey > $@
+	@umask 077 && cat $< | wg pubkey > $@
 
 .PHONY:
 genkeys: keys/server.pub keys/client.pub
