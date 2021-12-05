@@ -1,6 +1,6 @@
-# Roadwarrior VPN in Terraform CDK
+# Road Warrior VPN in Terraform CDK
 
-Playing around with [Terraform CDK](https://github.com/hashicorp/terraform-cdk) again. This time I am creating a [Wireguard](https://www.wireguard.com/) based "Roadwarrior" VPN setup, that I intend to use with my Mac.
+Playing around with [Terraform CDK](https://github.com/hashicorp/terraform-cdk) again. This time I am creating a [Wireguard](https://www.wireguard.com/) based "Road Warrior" VPN setup, that I intend to use with my Mac.
 
 Provided are commands to start VPN servers in either [DigitalOcean](https://digitalocean.com/) or [Hetzner Cloud](https://www.hetzner.com/cloud) infrastructures.
 
