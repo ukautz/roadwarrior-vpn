@@ -3,7 +3,9 @@
 exports[`Hetzner Stack Renders as expected 1`] = `
 "{
   \\"output\\": {
-    \\"client-vpn-address\\": {},
+    \\"client-vpn-address\\": {
+      \\"value\\": \\"192.168.6.10/24\\"
+    },
     \\"server-id\\": {
       \\"value\\": \\"\${hcloud_server.VpnServer.id}\\"
     },
@@ -13,8 +15,12 @@ exports[`Hetzner Stack Renders as expected 1`] = `
     \\"server-status\\": {
       \\"value\\": \\"\${hcloud_server.VpnServer.status}\\"
     },
-    \\"server-vpn-network\\": {},
-    \\"server-vpn-port\\": {}
+    \\"server-vpn-network\\": {
+      \\"value\\": \\"192.168.6.1/24\\"
+    },
+    \\"server-vpn-port\\": {
+      \\"value\\": \\"51397\\"
+    }
   },
   \\"provider\\": {
     \\"cloudinit\\": [

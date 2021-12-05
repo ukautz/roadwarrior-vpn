@@ -15,6 +15,10 @@ export interface WireguardCloudInitProps {
 }
 
 export class WireguardCloudInit extends cloudinit.Config {
+  public serverAddress: string;
+  public serverPort: string;
+  public clientAddress: string;
+
   constructor(scope: Construct, name: string, props: WireguardCloudInitProps) {
     super(scope, name, {
       base64Encode: props.base64Encode ?? true,
@@ -58,5 +62,9 @@ systemctl start wg-quick@wg0`,
         },
       ],
     });
+
+    this.serverAddress = props.vpnServerAddress ?? defaultServerAddress;
+    this.serverPort = props.vpnServerAddress ?? defaultServerPort;
+    this.clientAddress = props.vpnClientAddress ?? defaultClientAddress;
   }
 }

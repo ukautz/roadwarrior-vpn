@@ -54,9 +54,9 @@ export class HetznerStack extends TerraformStack {
       ["server-id", server.id],
       ["server-ip", server.ipv4Address],
       ["server-status", server.status],
-      ["server-vpn-port", props.vpnServerPort],
-      ["server-vpn-network", props.vpnServerAddress],
-      ["client-vpn-address", props.vpnClientAddress],
+      ["server-vpn-port", userData.serverPort],
+      ["server-vpn-network", userData.serverAddress],
+      ["client-vpn-address", userData.clientAddress],
     ].map(
       ([k, v]) =>
         new TerraformOutput(this, k as string, {
