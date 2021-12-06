@@ -4,13 +4,19 @@ import * as cloudinit from "../.gen/providers/cloudinit";
 const defaultServerAddress = "192.168.6.1/24";
 const defaultServerPort = "51397";
 const defaultClientAddress = "192.168.6.10/24";
+const defaultSshUser = "ubuntu";
 
-export interface WireguardCloudInitProps {
+export interface WireguardServerProps {
   vpnServerAddress?: string;
   vpnServerPort?: string;
   vpnServerPrivateKey: string;
   vpnClientPublicKey: string;
   vpnClientAddress?: string;
+  sshUser?: string;
+}
+
+export interface WireguardCloudInitProps extends WireguardServerProps {
+  sshKey: string;
   base64Encode?: boolean;
 }
 
@@ -18,6 +24,7 @@ export class WireguardCloudInit extends cloudinit.Config {
   public serverAddress: string;
   public serverPort: string;
   public clientAddress: string;
+  public sshUser: string;
 
   constructor(scope: Construct, name: string, props: WireguardCloudInitProps) {
     super(scope, name, {
@@ -60,11 +67,33 @@ echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/forwarding.conf
 systemctl enable wg-quick@wg0
 systemctl start wg-quick@wg0`,
         },
+        {
+          contentType: "text/cloud-config",
+          content: `#cloud-config
+disable_root: 1
+ssh_pwauth: 0
+groups:
+  - ${props.sshUser ?? defaultSshUser}
+users:
+  - name: ${props.sshUser ?? defaultSshUser}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    primary_group: ${props.sshUser ?? defaultSshUser}
+    groups: users
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ${props.sshKey}
+runcmd:
+  - ufw allow OpenSSH
+  - ufw allow ${props.vpnServerPort ?? defaultServerPort}/udp
+  - ufw enable
+`,
+        },
       ],
     });
 
     this.serverAddress = props.vpnServerAddress ?? defaultServerAddress;
     this.serverPort = props.vpnServerAddress ?? defaultServerPort;
     this.clientAddress = props.vpnClientAddress ?? defaultClientAddress;
+    this.sshUser = props.sshUser ?? defaultSshUser;
   }
 }

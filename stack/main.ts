@@ -12,6 +12,7 @@ const sshKeyPath = app.mustContext(
 const vpnServerPrivateKey = app.mustContext("vpnServerPrivateKey");
 const vpnClientPublicKey = app.mustContext("vpnClientPublicKey");
 
+const sshUser = app.context("sshUser");
 const vpnServerAddress = app.context("vpnNetwork");
 const vpnServerPort = app.context("vpnPort");
 const vpnClientAddress = app.context("vpnNetwork");
@@ -25,6 +26,7 @@ switch (provider) {
       serverType: app.context("serverType"),
       serverLocation: app.context("serverLocation"),
       sshKeyPath,
+      sshUser,
       vpnClientAddress,
       vpnClientPublicKey,
       vpnServerAddress,
@@ -39,6 +41,7 @@ switch (provider) {
       serverSize: app.context("serverSize"),
       serverRegion: app.context("serverRegion"),
       sshKeyPath,
+      sshUser,
       vpnClientAddress,
       vpnClientPublicKey,
       vpnServerAddress,

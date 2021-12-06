@@ -4,7 +4,7 @@ import * as hcloud from "../.gen/providers/hcloud";
 import * as fs from "fs";
 import {
   WireguardCloudInit,
-  WireguardCloudInitProps,
+  WireguardServerProps,
 } from "./wireguard-cloud-init";
 import { Construct } from "constructs";
 
@@ -12,7 +12,7 @@ const defaultServerImage = "ubuntu-20.04";
 const defaultServerType = "cx11";
 const defaultServerLocation = "nbg1";
 
-export interface HetznerStackProps extends WireguardCloudInitProps {
+export interface HetznerStackProps extends WireguardServerProps {
   hcloudToken: string;
   sshKeyPath: string;
   serverImage?: string;
@@ -38,6 +38,7 @@ export class HetznerStack extends TerraformStack {
 
     const userData = new WireguardCloudInit(this, "WireguardCloudInit", {
       ...props,
+      sshKey: publicKey,
       base64Encode: true,
     });
 
@@ -57,6 +58,7 @@ export class HetznerStack extends TerraformStack {
       ["server-vpn-port", userData.serverPort],
       ["server-vpn-network", userData.serverAddress],
       ["client-vpn-address", userData.clientAddress],
+      ["ssh-user", userData.sshUser],
     ].map(
       ([k, v]) =>
         new TerraformOutput(this, k as string, {

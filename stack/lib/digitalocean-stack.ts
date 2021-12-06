@@ -4,7 +4,7 @@ import * as digitalocean from "../.gen/providers/digitalocean";
 import * as fs from "fs";
 import {
   WireguardCloudInit,
-  WireguardCloudInitProps,
+  WireguardServerProps,
 } from "./wireguard-cloud-init";
 import { Construct } from "constructs";
 
@@ -12,7 +12,7 @@ const defaultServerImage = "ubuntu-20-04-x64";
 const defaultServerSize = "s-1vcpu-1gb";
 const defaultServerRegion = "fra1";
 
-export interface DigitalOceanStackProps extends WireguardCloudInitProps {
+export interface DigitalOceanStackProps extends WireguardServerProps {
   digitalOceanToken: string;
   sshKeyPath: string;
   serverImage?: string;
@@ -38,6 +38,7 @@ export class DigitalOceanStack extends TerraformStack {
 
     const userData = new WireguardCloudInit(this, "WireguardCloudInit", {
       ...props,
+      sshKey: publicKey,
       base64Encode: false,
     });
 
@@ -57,6 +58,7 @@ export class DigitalOceanStack extends TerraformStack {
       ["server-vpn-port", userData.serverPort],
       ["server-vpn-network", userData.serverAddress],
       ["client-vpn-address", userData.clientAddress],
+      ["ssh-user", userData.sshUser],
     ].map(
       ([k, v]) =>
         new TerraformOutput(this, k as string, {
