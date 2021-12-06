@@ -5,33 +5,40 @@ import { DigitalOceanStack } from "./lib/digitalocean-stack";
 
 const app = new App();
 
-const sshKeyPath = app.mustContext(
-  "sshKeyPath",
-  path.join(process.env.HOME as string, ".ssh", "id_ecdsa.pub")
-);
-const vpnServerPrivateKey = app.mustContext("vpnServerPrivateKey");
-const vpnClientPublicKey = app.mustContext("vpnClientPublicKey");
+const props = {
+  /*
+  ---
+  REQUIRED
+  ---
+  */
 
-const sshUser = app.context("sshUser");
-const vpnServerAddress = app.context("vpnNetwork");
-const vpnServerPort = app.context("vpnPort");
-const vpnClientAddress = app.context("vpnNetwork");
-const provider = app.context("provider", "hetzner");
+  provider: app.mustContext("provider"),
+  sshKeyPath: app.mustContext(
+    "sshKeyPath",
+    path.join(process.env.HOME as string, ".ssh", "id_ecdsa.pub")
+  ),
+  vpnServerPrivateKey: app.mustContext("vpnServerPrivateKey"),
+  vpnClientPublicKey: app.mustContext("vpnClientPublicKey"),
 
-switch (provider) {
+  /*
+  ---
+  OPTIONAL
+  ---
+  */
+  sshUser: app.context("sshUser"),
+  vpnServerAddress: app.context("vpnServerAddress"),
+  vpnServerPort: app.context("vpnServerPort"),
+  vpnClientAddress: app.context("vpnClientAddress"),
+};
+
+switch (props.provider) {
   case "hetzner":
     new HetznerStack(app, "VpnStack", {
       hcloudToken: app.mustContext("hcloudToken"),
       serverImage: app.context("serverImage"),
       serverType: app.context("serverType"),
       serverLocation: app.context("serverLocation"),
-      sshKeyPath,
-      sshUser,
-      vpnClientAddress,
-      vpnClientPublicKey,
-      vpnServerAddress,
-      vpnServerPort,
-      vpnServerPrivateKey,
+      ...props,
     });
     break;
   case "digitalocean":
@@ -40,18 +47,12 @@ switch (provider) {
       serverImage: app.context("serverImage"),
       serverSize: app.context("serverSize"),
       serverRegion: app.context("serverRegion"),
-      sshKeyPath,
-      sshUser,
-      vpnClientAddress,
-      vpnClientPublicKey,
-      vpnServerAddress,
-      vpnServerPort,
-      vpnServerPrivateKey,
+      ...props,
     });
     break;
   default:
     throw new Error(
-      `Unsupported provider ${provider}. Use hetzner or digitalocean`
+      `Unsupported provider ${props.provider}. Use hetzner or digitalocean`
     );
 }
 
