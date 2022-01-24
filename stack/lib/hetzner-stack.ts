@@ -53,7 +53,8 @@ export class HetznerStack extends TerraformStack {
 
     [
       ["server-id", server.id],
-      ["server-ip", server.ipv4Address],
+      ["server-ipv4", server.ipv4Address],
+      ["server-ipv6", server.ipv6Address],
       ["server-status", server.status],
       ["server-vpn-port", userData.serverPort],
       ["server-vpn-network", userData.serverAddress],

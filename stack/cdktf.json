@@ -10,10 +10,10 @@
     },
     {
       "name": "hcloud",
-      "version": ">=1.32,<2",
+      "version": "~>1.32",
       "source": "hetznercloud/hcloud"
     },
-    "cloudinit@>=2.2,<3",
+    "cloudinit@~>2.2",
     "local"
   ],
   "terraformModules": [],
